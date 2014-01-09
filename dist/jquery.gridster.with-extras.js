@@ -1040,6 +1040,7 @@
         var old_size_y = wgd.size_y;
         var old_col = wgd.col;
         var new_col = old_col;
+        var old_row = wgd.row;
 
         if (reposition && old_col + size_x - 1 > this.cols) {
             var diff = old_col + (size_x - 1) - this.cols;
@@ -1053,7 +1054,7 @@
 
         // Cancel the resize if too large
         if (this.options.max_rows) {
-            var new_total_height = size_y + Math.round($widget.attr('data-row')) - 1;
+            var new_total_height = size_y + old_row - 1;
             if (new_total_height > this.options.max_rows) {
                 return $widget;
             }
