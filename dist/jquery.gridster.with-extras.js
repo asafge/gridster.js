@@ -785,6 +785,8 @@
     *    @param {Number} [options.max_cols] The maximum columns possible (set to null
     *     for no maximum).
     *    @param {Number} [options.min_rows] The minimum required rows.
+    *    @param {Number} [options.max_rows] The maximum rows possible (set to null
+     *    for no maximum).
     *    @param {Number} [options.max_size_x] The maximum number of columns
     *     that a widget can span.
     *    @param {Boolean} [options.autogenerate_stylesheet] If true, all the
@@ -1050,8 +1052,11 @@
         }
 
         // Cancel the resize if too large
-        if (size_y + Math.round($widget.attr('data-row')) - 1 > this.options.max_rows) {
-            return $widget;
+        if (this.options.max_rows) {
+            var new_total_height = size_y + Math.round($widget.attr('data-row')) - 1;
+            if (new_total_height > this.options.max_rows) {
+                return $widget;
+            }
         }
 
         var new_grid_data = {
