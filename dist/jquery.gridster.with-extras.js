@@ -1049,6 +1049,11 @@
             this.add_faux_rows(Math.max(size_y - old_size_y, 0));
         }
 
+        // Cancel the resize if too large
+        if (size_y + Math.round($widget.attr('data-row')) - 1 > this.options.max_rows) {
+            return $widget;
+        }
+
         var new_grid_data = {
             col: new_col,
             row: wgd.row,
