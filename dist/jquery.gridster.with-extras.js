@@ -1036,6 +1036,9 @@
         if (size_x > this.cols) {
             size_x = this.cols;
         }
+        if (size_y > this.rows) {
+            size_y = this.rows;
+        }
 
         var old_size_y = wgd.size_y;
         var old_col = wgd.col;
@@ -1058,6 +1061,11 @@
             if (new_total_height > this.options.max_rows) {
                 return $widget;
             }
+        }
+
+        // Don't expand if there isn't any room below
+        if (this.get_bottom_most_occupied_cell().row > this.options.max_rows) {
+            size_y = old_size_y;
         }
 
         var new_grid_data = {
@@ -1208,6 +1216,19 @@
                 size_x: size_x,
                 size_y: size_y
             });
+
+        var result = true;
+        $nexts.not($exclude).each($.proxy(function(i, w) {
+            // Can't move this widget down, cancel!
+            if (!this.can_go_down($(w))) {
+              result = false;
+              return true; // break
+            }
+        }, this));
+
+        if (!result) {
+            return this;
+        }
 
         $nexts.not($exclude).each($.proxy(function(i, w) {
             var wgd = $(w).coords().grid;
@@ -2891,6 +2912,30 @@
         }
 
         return result;
+    };
+
+    fn.can_go_down = function($el) {
+      var el_grid_data = $el.coords().grid;
+      var initial_row = el_grid_data.row;
+      var next_row = initial_row + 1;
+      var ga = this.gridmap;
+      var upper_rows_by_column = [];
+
+      var result = true;
+      if (initial_row === this.rows) {
+        return false;
+      }
+
+      this.for_each_column_occupied(el_grid_data, function(col) {
+        var $w = this.is_widget(col, next_row);
+
+        if (this.is_occupied(col, next_row) || this.is_player(col, next_row) || this.is_placeholder_in(col, next_row) || this.is_player_in(col, next_row)) {
+          result = false;
+          return true; //break
+        }
+      });
+
+      return result;
     };
 
 
