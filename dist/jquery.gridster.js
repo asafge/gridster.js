@@ -736,6 +736,7 @@
         min_cols: 1,
         max_cols: null,
         min_rows: 15,
+        max_rows: null,
         max_size_x: false,
         autogenerate_stylesheet: true,
         avoid_overlapped_widgets: true,
