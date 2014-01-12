@@ -736,6 +736,7 @@
         min_cols: 1,
         max_cols: null,
         min_rows: 15,
+        max_rows: null,
         max_size_x: false,
         autogenerate_stylesheet: true,
         avoid_overlapped_widgets: true,
@@ -1065,11 +1066,6 @@
             else {
                 this.add_faux_rows(Math.max(size_y - old_size_y, 0));
             }
-        }
-
-        // Don't expand if there isn't any room below
-        if (this.get_bottom_most_occupied_cell().row > this.options.max_rows) {
-            size_y = old_size_y;
         }
 
         var new_grid_data = {
@@ -2941,6 +2937,7 @@
       return result;
     };
 
+
     fn.displacement_diff = function(widget_grid_data, parent_bgd, y_units) {
         var actual_row = widget_grid_data.row;
         var diffs = [];
@@ -3637,6 +3634,7 @@
         var aw = this.$wrapper.width();
         var ah = this.$wrapper.height();
         var max_cols = this.options.max_cols;
+        var max_rows = this.options.max_rows;
 
         var cols = Math.floor(aw / this.min_widget_width) +
                    this.options.extra_cols;
@@ -3651,18 +3649,20 @@
         var min_cols = Math.max.apply(Math, actual_cols);
 
         // get all rows that could be occupied by the current widgets
-        var max_rows = this.options.extra_rows;
+        var extra_rows = this.options.extra_rows;
         this.$widgets.each(function(i, w) {
-            max_rows += (+$(w).attr('data-sizey'));
+            extra_rows += (+$(w).attr('data-sizey'));
         });
 
         this.cols = Math.max(min_cols, cols, this.options.min_cols);
-
         if (max_cols && max_cols >= min_cols && max_cols < this.cols) {
             this.cols = max_cols;
         }
 
         this.rows = Math.max(max_rows, this.options.min_rows);
+        if (max_rows && max_rows < this.rows) {
+            this.rows = max_rows;
+        }
 
         this.baseX = ($(window).width() - aw) / 2;
         this.baseY = this.$wrapper.offset().top;
