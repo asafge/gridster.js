@@ -2922,8 +2922,6 @@
       var el_grid_data = $el.coords().grid;
       var initial_row = el_grid_data.row;
       var next_row = (initial_row + el_grid_data.size_y - 1) + 1;
-      var ga = this.gridmap;
-      var upper_rows_by_column = [];
 
       if (initial_row === this.rows) {
           return false;
@@ -2934,8 +2932,6 @@
 
       var result = true;
       this.for_each_column_occupied(el_grid_data, function(col) {
-        var $w = this.is_widget(col, next_row);
-
         if (this.is_occupied(col, next_row) || this.is_player(col, next_row) || this.is_placeholder_in(col, next_row) || this.is_player_in(col, next_row)) {
           result = false;
           return true; //break
