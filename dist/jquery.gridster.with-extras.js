@@ -2921,15 +2921,18 @@
     fn.can_go_down = function($el) {
       var el_grid_data = $el.coords().grid;
       var initial_row = el_grid_data.row;
-      var next_row = initial_row + 1;
+      var next_row = (initial_row + el_grid_data.size_y - 1) + 1;
       var ga = this.gridmap;
       var upper_rows_by_column = [];
 
-      var result = true;
       if (initial_row === this.rows) {
-        return false;
+          return false;
+      }
+      if (next_row > this.rows) {
+          return false;
       }
 
+      var result = true;
       this.for_each_column_occupied(el_grid_data, function(col) {
         var $w = this.is_widget(col, next_row);
 
@@ -2941,7 +2944,6 @@
 
       return result;
     };
-
 
     fn.displacement_diff = function(widget_grid_data, parent_bgd, y_units) {
         var actual_row = widget_grid_data.row;
