@@ -3078,6 +3078,10 @@
         if (right_col > this.cols) {
             return false;
         }
+        var bottom_row = row + widget_grid_data.size_y - 1;
+        if (bottom_row > this.rows) {
+            return false;
+        }
 
         if (max_row && max_row < row + widget_grid_data.size_y - 1) {
             return false;
