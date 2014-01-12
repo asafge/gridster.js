@@ -1075,6 +1075,12 @@
             size_y: size_y
         };
 
+        // Rollback change if widgets are overlapping
+        if (this.options.avoid_overlapped_widgets) {
+            if (!this.try_mutate_widget_in_gridmap($widget, wgd, new_grid_data)) {
+                return $widget;
+            }
+        }
         this.mutate_widget_in_gridmap($widget, wgd, new_grid_data);
 
         this.set_dom_grid_height();
@@ -1084,6 +1090,72 @@
         }
 
         return $widget;
+    };
+
+    /**
+    * Try to mutate widget dimensions and position in the grid map.
+    *
+    * @method try_mutate_widget_in_gridmap
+    * @param {HTMLElement} $widget The jQuery wrapped HTMLElement
+    *  representing the widget to mutate.
+    * @param {Object} wgd Current widget grid data (col, row, size_x, size_y).
+    * @param {Object} new_wgd New widget grid data.
+    * @return {Boolean} True if the mutation is possible.
+    */
+    fn.try_mutate_widget_in_gridmap = function($widget, wgd, new_wgd) {
+        var old_size_x = wgd.size_x;
+        var old_size_y = wgd.size_y;
+
+        var old_cells_occupied = this.get_cells_occupied(wgd);
+        var new_cells_occupied = this.get_cells_occupied(new_wgd);
+
+        var empty_cols = [];
+        $.each(old_cells_occupied.cols, function(i, col) {
+            if ($.inArray(col, new_cells_occupied.cols) === -1) {
+                empty_cols.push(col);
+            }
+        });
+
+        var occupied_cols = [];
+        $.each(new_cells_occupied.cols, function(i, col) {
+            if ($.inArray(col, old_cells_occupied.cols) === -1) {
+                occupied_cols.push(col);
+            }
+        });
+
+        var empty_rows = [];
+        $.each(old_cells_occupied.rows, function(i, row) {
+            if ($.inArray(row, new_cells_occupied.rows) === -1) {
+                empty_rows.push(row);
+            }
+        });
+
+        var occupied_rows = [];
+        $.each(new_cells_occupied.rows, function(i, row) {
+            if ($.inArray(row, old_cells_occupied.rows) === -1) {
+                occupied_rows.push(row);
+            }
+        });
+
+        //this.remove_from_gridmap(wgd);
+
+        if (occupied_cols.length) {
+            var cols_to_empty = [
+                new_wgd.col, new_wgd.row, new_wgd.size_x, Math.min(old_size_y, new_wgd.size_y), $widget
+            ];
+            if (!this.try_empty_cells.apply(this, cols_to_empty)) {
+                return false;
+            }
+        }
+
+        if (occupied_rows.length) {
+            var rows_to_empty = [new_wgd.col, new_wgd.row, new_wgd.size_x, new_wgd.size_y, $widget];
+            if (!this.try_empty_cells.apply(this, rows_to_empty)) {
+                return false;
+            }
+        }
+
+        return true;
     };
 
 
@@ -1194,6 +1266,38 @@
         return this;
     };
 
+    /**
+    * Try to move down widgets in cells represented by the arguments col, row,
+    * size_x, size_y
+    *
+    * @method empty_cells
+    * @param {Number} col The column where the group of cells begin.
+    * @param {Number} row The row where the group of cells begin.
+    * @param {Number} size_x The number of columns that the group of cells
+    * occupy.
+    * @param {Number} size_y The number of rows that the group of cells
+    * occupy.
+    * @param {HTMLElement} $exclude Exclude widgets from being moved.
+    * @return {Booleam} True if moving down is possible.
+    */
+    fn.try_empty_cells = function(col, row, size_x, size_y, $exclude) {
+        var $nexts = this.widgets_below({ col: col, row: row - size_y, size_x: size_x, size_y: size_y });
+        var result = false;
+
+        $nexts.not($exclude).each($.proxy(function(i, w) {
+            // Can move this widget down
+            if (this.can_go_down($(w), row, size_y)) {
+              result = true;
+              return true; // break
+            }
+        }, this));
+        if (!$nexts.not($exclude).length) {
+            // No need to move down at all
+            result = true;
+        }
+        return result;
+    };
+
 
     /**
     * Move down widgets in cells represented by the arguments col, row, size_x,
@@ -1217,11 +1321,11 @@
                 size_y: size_y
             });
 
-        var result = true;
+        var result = false;
         $nexts.not($exclude).each($.proxy(function(i, w) {
-            // Can't move this widget down, cancel!
-            if (!this.can_go_down($(w))) {
-              result = false;
+            // Can move this widget down
+            if (this.can_go_down($(w), row, size_y)) {
+              result = true;
               return true; // break
             }
         }, this));
@@ -2914,10 +3018,10 @@
         return result;
     };
 
-    fn.can_go_down = function($el) {
+    fn.can_go_down = function($el, start_row, how_much) {
       var el_grid_data = $el.coords().grid;
       var initial_row = el_grid_data.row;
-      var next_row = (initial_row + el_grid_data.size_y - 1) + 1;
+      var next_row = (start_row + el_grid_data.size_y - 1) + how_much;
 
       if (initial_row === this.rows) {
           return false;
