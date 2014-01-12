@@ -960,7 +960,9 @@
 
         this.register_widget($w);
 
-        this.add_faux_rows(pos.size_y);
+        if (!this.options.max_rows || this.options.max_rows > this.rows) {
+            this.add_faux_rows(pos.size_y);
+        }
         //this.add_faux_cols(pos.size_x);
 
         if (max_size) {
@@ -1052,14 +1054,16 @@
         }
 
         if (size_y > old_size_y) {
-            this.add_faux_rows(Math.max(size_y - old_size_y, 0));
-        }
-
-        // Cancel the resize if too large
-        if (this.options.max_rows) {
-            var new_total_height = size_y + old_row - 1;
-            if (new_total_height > this.options.max_rows) {
-                return $widget;
+            // Cancel the resize if larger than max_rows
+            if (this.options.max_rows) {
+                var new_total_height = size_y + old_row - 1;
+                if (new_total_height > this.options.max_rows) {
+                    return $widget;
+                }
+            }
+            // But add more rows if possible
+            else {
+                this.add_faux_rows(Math.max(size_y - old_size_y, 0));
             }
         }
 
