@@ -1779,8 +1779,8 @@
         this.resize_last_sizey = this.resize_initial_sizey;
         this.resize_max_size_x = Math.min(this.resize_wgd.max_size_x ||
             this.options.resize.max_size[0], this.cols - this.resize_wgd.col + 1);
-        this.resize_max_size_y = this.resize_wgd.max_size_y ||
-            this.options.resize.max_size[1];
+        this.resize_max_size_y = Math.min(this.resize_wgd.max_size_y ||
+            this.options.resize.max_size[1], this.rows - this.resize_wgd.row + 1);
 
         this.resize_dir = {
             right: ui.$player.is('.' + this.resize_handle_class + '-x'),
